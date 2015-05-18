@@ -3,17 +3,14 @@ var router = express.Router();
 var mongoose = require('mongoose');
 var session = require('express-session');
 var shoppingCartSchema = require('../models/shoppingCartSchema.js');
+var pageRenderModule = require('../modules/pageRenderModule.js');
 
 /* GET shopping cart page. */
 router.get('/', function(req, res, next) {
   if(req.session.name){
     shoppingCartSchema.find(function(err,cartdata){
       shoppingCartSchema.populate(cartdata,{path: 'productId'},function(err,cartdata){
-        res.render('pages/shoppingcart',
-        { 
-          title: 'Shopping Cart', 
-          data : cartdata
-        });
+        pageRenderModule.getShoppingCartPage(res, cartdata);
       });
     });
   }

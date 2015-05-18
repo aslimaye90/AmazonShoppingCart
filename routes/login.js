@@ -5,13 +5,11 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var usersSchema = require('../models/usersSchema.js');
+var pageRenderModule = require('../modules/pageRenderModule.js');
 
 /* GET login page. */
 router.get('/', function(req, res) {
-  res.render('pages/login', 
-    {
-      title: 'Login'
-    });
+  pageRenderModule.getLoginPage(res);
 });
 
 /*check login credentials and act accordingly*/

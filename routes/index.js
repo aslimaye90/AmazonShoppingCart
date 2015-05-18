@@ -5,16 +5,12 @@ var session = require('express-session');
 var categoriesSchema = require('../models/categoriesSchema.js');
 var productsSchema = require('../models/productsSchema.js');
 var shoppingCartSchema = require('../models/shoppingCartSchema.js');
+var pageRenderModule = require('../modules/pageRenderModule.js');
 
 /* GET home page. */
 router.get('/', function(req, res) {
   if(req.session.name){
-    res.render('pages/index', 
-    	{ 
-    		title: 'Home',
-    		name: req.session.name,
-    		page: 'Your Home page'
-    });
+    pageRenderModule.getHomePage(req,res);
   }
   else
     res.redirect('/login');
@@ -26,11 +22,7 @@ router.get('/products', function(req, res) {
   if(req.session.name){
     productsSchema.find(function(err,products){
       productsSchema.populate(products,{path: 'category'},function(err,products){
-        res.render('pages/products',
-        { 
-          title: 'Products', 
-          data : products
-        });
+        pageRenderModule.getProductsPage(res,products);
       });
     });
   }
@@ -44,11 +36,7 @@ router.get('/categories', function(req, res, next) {
   if(req.session.name){
     categoriesSchema.find(function (err, categories) {
       if (err) return next(err);
-      res.render('pages/categories',
-      { 
-        title: 'Categories', 
-        data : categories
-      });
+      pageRenderModule.getCategoriesPage(res, categories);
     });
   }
   else
