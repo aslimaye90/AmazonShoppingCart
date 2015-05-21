@@ -7,49 +7,46 @@ var productsSchema = require('../models/productsSchema.js');
 var shoppingCartSchema = require('../models/shoppingCartSchema.js');
 var redisCaching = require('../modules/redisCaching.js');
 
-//var shoppingCartSchema = mongoose.model('shoppingcart');
+var genericCallback = function(data, funct, res){
+  if(data == 'xxx'){
+    funct();
+  }
+  else{
+    res.json(JSON.parse(data));
+  }
+}
 
 /* GET categories listing. */
 router.get('/categories', function(req, res, next) {
-  
-  var callbackFunction = function(data){
-    if (data == 'xxx'){
-      categoriesSchema.find(function (err, categories) {
-        if (err) 
-          return next(err);
+  var categoriesFunct = function(){
+    categoriesSchema.find(function (err, categories) {
+      if (err) 
+        return next(err);
 
-        redisCaching.cacheThis('allCategories', JSON.stringify(categories));
-        res.json(categories);
-      });
-    }
-    else{
-      res.json(JSON.parse(data));
-    }
+      redisCaching.cacheThis('allCategories', JSON.stringify(categories));
+      res.json(categories);
+    });
   }
 
-  redisCaching.checkInCache('allCategories', callbackFunction);  
+  redisCaching.checkInCache('allCategories', genericCallback, categoriesFunct, res);  
 });
 
 
 /* GET products listing. */
 router.get('/products', function(req, res, next) {
-  var callbackFunction = function(data){
-    if (data == 'xxx'){
-      productsSchema.find(function (err, products) {
-        if (err)
-          return next(err);
+  var productsFunct = function(){
+    productsSchema.find(function (err, products) {
+      if (err)
+        return next(err);
 
-        redisCaching.cacheThis('allProducts', JSON.stringify(products));
-        res.json(products);
-      });
-    }
-    else{
-      res.json(JSON.parse(data));
-    }
+      redisCaching.cacheThis('allProducts', JSON.stringify(products));
+      res.json(products);
+    });
   }
 
-  redisCaching.checkInCache('allProducts', callbackFunction);  
+  redisCaching.checkInCache('allProducts', genericCallback, productsFunct, res);  
 });
+
 
 /*detailed info of a product*/
 router.get('/products/:Pid',function(req,res){
@@ -63,43 +60,33 @@ router.get('/products/:Pid',function(req,res){
 
 /* GET users listing. */
 router.get('/users', function(req, res, next) {
-  var callbackFunction = function(data){
-    if (data == 'xxx'){
-      usersSchema.find(function (err, users) {
-        if (err)
-          return next(err);
+  var usersFunct = function(){
+    usersSchema.find(function (err, users) {
+      if (err)
+        return next(err);
 
-        redisCaching.cacheThis('allUsers', JSON.stringify(users));
-        res.json(users);
-      });
-    }
-    else{
-      res.json(JSON.parse(data));
-    }
+      redisCaching.cacheThis('allUsers', JSON.stringify(users));
+      res.json(users);
+    });
   }
 
-  redisCaching.checkInCache('allUsers', callbackFunction);  
+  redisCaching.checkInCache('allUsers', genericCallback, usersFunct, res);  
 });
 
 
 /* GET shopping cart listing. */
 router.get('/shoppingcart', function(req, res, next) {
-  var callbackFunction = function(data){
-    if (data == 'xxx'){
-      shoppingCartSchema.find(function (err, shoppingcart) {
-        if (err)
-          return next(err);
+  var shoppingcartFunct = function(){
+    shoppingCartSchema.find(function (err, shoppingcart) {
+      if (err)
+        return next(err);
 
-        redisCaching.cacheThis('shoppingCart', JSON.stringify(shoppingcart));
-        res.json(shoppingcart);
-      });
-    }
-    else{
-      res.json(JSON.parse(data));
-    }
+      redisCaching.cacheThis('shoppingCart', JSON.stringify(shoppingcart));
+      res.json(shoppingcart);
+    });
   }
 
-  redisCaching.checkInCache('shoppingCart', callbackFunction);    
+  redisCaching.checkInCache('shoppingCart', genericCallback, shoppingcartFunct, res);    
 });
 
 
