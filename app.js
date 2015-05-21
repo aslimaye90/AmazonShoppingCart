@@ -19,9 +19,9 @@ var app = express();
 /*mongoose.connect('mongodb://localhost/testDB');*/
 mongoose.connect('mongodb://localhost/testDB', function(err) {
     if(err) {
-        console.log('database connection error', err);
+        console.log('MySQL connection error', err);
     } else {
-        console.log('database connection successful');
+        console.log('connected to MySQL');
     }
 });
 

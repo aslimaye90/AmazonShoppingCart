@@ -4,15 +4,29 @@ var mongoose = require('mongoose');
 var session = require('express-session');
 var shoppingCartSchema = require('../models/shoppingCartSchema.js');
 var pageRenderModule = require('../modules/pageRenderModule.js');
+var redisCaching = require('../modules/redisCaching.js');
 
 /* GET shopping cart page. */
 router.get('/', function(req, res, next) {
-  if(req.session.name){
-    shoppingCartSchema.find(function(err,cartdata){
-      shoppingCartSchema.populate(cartdata,{path: 'productId'},function(err,cartdata){
-        pageRenderModule.getShoppingCartPage(res, cartdata);
+  var callbackFunction = function(data){
+    if (data == 'xxx'){
+      shoppingCartSchema.find(function(err,cartdata){
+        shoppingCartSchema.populate(cartdata,{path: 'productId'},function(err,cartdata){
+          if (err)
+            return next(err);
+
+          redisCaching.cacheThis('shoppingCartFull', JSON.stringify(cartdata));
+          pageRenderModule.getShoppingCartPage(res, cartdata);
+        });
       });
-    });
+    }
+    else{
+      pageRenderModule.getShoppingCartPage(res, JSON.parse(data));
+    }
+  }
+
+  if(req.session.name){
+    redisCaching.checkInCache('shoppingCartFull', callbackFunction);    
   }
   else
     res.redirect('/login');
@@ -26,8 +40,11 @@ router.post('/', function(req, res, next) {
       item.save(function (err) {
         if (err) 
           return err;
-        else
+        else{
+          redisCaching.removeFromCache('shoppingCartFull');
+          redisCaching.removeFromCache('shoppingCart');
           console.log("Item added to cart successfully!");
+        }          
       });
     }
     else
@@ -44,6 +61,8 @@ router.post('/delete', function(req, res, next) {
       return err;
     else{
       console.log('Item removed successfully!');
+      redisCaching.removeFromCache('shoppingCartFull');
+      redisCaching.removeFromCache('shoppingCart');
       res.redirect('/shoppingcart');
     }
   });
@@ -60,6 +79,8 @@ router.post('/inc', function(req, res, next) {
       doc.productId=req.body.id;
       doc.quantity=parseInt(req.body.quantity)+1;
       doc.save();
+      redisCaching.removeFromCache('shoppingCartFull');
+      redisCaching.removeFromCache('shoppingCart');
     }
     res.redirect('/shoppingcart');
   });
@@ -76,6 +97,8 @@ router.post('/dec', function(req, res, next) {
       doc.productId=req.body.id;
       doc.quantity=parseInt(req.body.quantity)-1;
       doc.save();
+      redisCaching.removeFromCache('shoppingCartFull');
+      redisCaching.removeFromCache('shoppingCart');
     }
     res.redirect('/shoppingcart');
   });
